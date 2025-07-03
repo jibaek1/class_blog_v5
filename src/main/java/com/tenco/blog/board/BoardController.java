@@ -22,7 +22,6 @@ public class BoardController {
 
     private static final Logger log = LoggerFactory.getLogger(BoardController.class);
     private final BoardService boardService;
-
     /**
      * 게시글 수정 화면 요청
      */
@@ -90,7 +89,10 @@ public class BoardController {
     }
 
     @GetMapping("/board/{id}")
-    public String detail(@PathVariable(name = "id") Long id, Model model) {
+    public String detail(@PathVariable(name = "id") Long id, Model model,HttpSession session) {
+
+        User sessionUser = (User)session.getAttribute("sessionUser");
+        Board board = boardService.findByIdWithReplies(id, sessionUser);
         model.addAttribute("board", boardService.findById(id));
         return "board/detail";
     }

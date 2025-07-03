@@ -9,6 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.sql.Timestamp;
 import java.util.ArrayList;
@@ -41,6 +42,11 @@ public class Board {
     @CreationTimestamp
     private Timestamp createdAt; // created_at () (스네이크 케이스로 자동 변환)
 
+    // 테이블에 필드를 만들지 마 !
+    // (현재 로그인한 유저와 게시글 작성자 여부를 판단 함)
+    @Transient
+    private boolean isBoardOwner;
+
     // 게시글에 소유자를 직접 확인하는 기능을 만들자
     public boolean isOwner(Long checkUserId) {
         return this.user.getId().equals(checkUserId);
@@ -67,5 +73,7 @@ public class Board {
     @OrderBy("id DESC") // 정렬 옵션 설정
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "board", cascade = CascadeType.REMOVE)
     List<Reply> replies = new ArrayList<>(); // List 선언과 동시에 초기화
+
+
 
 }

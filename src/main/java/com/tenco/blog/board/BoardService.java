@@ -2,6 +2,7 @@ package com.tenco.blog.board;
 
 import com.tenco.blog._core.errors.exception.Exception403;
 import com.tenco.blog._core.errors.exception.Exception404;
+import com.tenco.blog.reply.Reply;
 import com.tenco.blog.user.User;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -59,6 +60,34 @@ public class BoardService {
         log.info("게시글 목록 조회 완료 - 총 {} 개", boardList.size());
         return boardList;
     }
+
+    //
+    public Board findByIdWithReplies(Long id,User sessionUser) {
+        // 1. 게시글 조회
+        Board board = boardJpaRepository.findByIdJoinUser(id).orElseThrow(
+                () -> new Exception404("게시글을 찾을 수 없습니다"));
+        // 2. 게시글 작성자 정보 포함해 주어야 함
+        // 3. 게시글 소유권 설정(수정 / 삭제버튼 표 사용)
+        if (sessionUser != null) {
+            boolean isBoardOwner = board.isOwner(sessionUser.getId());
+
+        }
+
+        // 댓글 정보 <- 양방향 맵핑 Board <--- 댓글 가져옴
+        List<Reply> replies = board.getReplies();
+
+        // 댓글 소유권 설정 (삭제 버튼 표시용)
+        if (sessionUser != null) {
+            // for (int i = 0; i < replies.size(); i++) {}
+            replies.forEach(reply -> {
+                boolean isReplyOwner = reply.isOwner(sessionUser.getId());
+                reply.setReplyOwner(isReplyOwner);
+            });
+        }
+        return board;
+    }
+
+
 
     /**
      * 게시글 상세 조회
